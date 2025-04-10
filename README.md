@@ -43,7 +43,8 @@
 > Všetky SQL príkazy sú pripravené, stačí ich vložiť do MySQL Workbench.
 
 1. Vytvor databázu `task_manager_1_1` v MySQL.
-2. V rámci nej vytvor tabuľku `ulohy` pomocou SQL:
+   CREATE DATABASE task_manager_1_1;
+3. V rámci nej vytvor tabuľku `ulohy` pomocou SQL:
    
 ```sql
 CREATE TABLE IF NOT EXISTS ulohy (
