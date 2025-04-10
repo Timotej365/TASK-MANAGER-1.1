@@ -24,6 +24,28 @@
   4. **Odstrániť úlohu** – zmaže úlohu podľa jej ID z databázy.
   5. **Ukončiť program** – korektne ukončí beh aplikácie.
 
+## 🔁 Porovnanie s predchádzajúcou verziou:
+
+🔹 Ukladanie úloh:
+- 1.0: do pamäťového zoznamu (stratí sa po vypnutí)
+- 1.1: do MySQL databázy (trvalé uloženie)
+
+🔹 Validácia vstupov:
+- 1.0: mohol si zadať prázdny názov alebo popis
+- 1.1: názov aj popis sú povinné
+
+🔹 Aktualizácia stavu:
+- 1.0: neexistovala
+- 1.1: možnosť zmeniť stav na „Prebieha“ alebo „Hotová“
+
+🔹 Odstránenie úlohy:
+- 1.0: vymazanie podľa poradia v zozname
+- 1.1: vymazanie podľa ID z databázy
+
+🔹 Konzolové menu:
+- 1.0: 4 možnosti (bez aktualizácie a bez validácie)
+- 1.1: 5 možností (plné CRUD, validácia, pripojenie k DB)
+
 ---
 
 ## 🧰 Použité technológie
