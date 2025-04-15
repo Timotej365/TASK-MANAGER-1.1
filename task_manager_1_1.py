@@ -1,16 +1,28 @@
 import mysql.connector
 from mysql.connector import Error
 
-
+# Pripojenie + vytvorenie databázy ak ešte neexistuje
 def pripojenie_db():
     try:
+        # Najprv pripojenie k serveru bez DB
         spojenie = mysql.connector.connect(
             host="localhost",
-            user="root",         
-            password="1111",    
-            database="task_manager_1_1"       
+            user="root",
+            password="1111"
         )
+        kurzor = spojenie.cursor()
+        kurzor.execute("CREATE DATABASE IF NOT EXISTS task_manager_1_1")
+        spojenie.commit()
+        kurzor.close()
+        spojenie.close()
 
+        # Potom sa pripojíme už k vytvorenej databáze
+        spojenie = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="1111",
+            database="task_manager_1_1"
+        )
         if spojenie.is_connected():
             print("✅ Pripojenie k databáze prebehlo úspešne.")
             return spojenie
@@ -19,10 +31,26 @@ def pripojenie_db():
         print("❌ Chyba pri pripájaní k databáze:", e)
         exit()
 
-# Na začiatku programu
-spojenie = pripojenie_db()  # ← takto si zavoláme funkciu a spojenie si uložíme
+# Vytvorenie tabuľky ulohy
+def vytvor_tabulku(spojenie):
+    try:
+        cursor = spojenie.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS ulohy (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nazov VARCHAR(255) NOT NULL,
+                popis TEXT,
+                stav ENUM('Nezahájená', 'Prebieha', 'Hotová') DEFAULT 'Nezahájená',
+                datum_vytvoreni DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        spojenie.commit()
+        cursor.close()
+        print("🧱 Tabuľka 'ulohy' bola pripravená.")
+    except Error as e:
+        print("❌ Chyba pri vytváraní tabuľky:", e)
 
-# Funkcia hlavného menu – vráti voľbu používateľa ako text (napr. "1", "2", ...)
+# Hlavné menu
 def hlavne_menu():
     print("\nSprávca úloh - Hlavné menu")
     print("1. Pridať novú úlohu")
@@ -33,7 +61,7 @@ def hlavne_menu():
     volba = input("Vyberte možnosť (1-5): ")
     return volba
 
-# Funkcia na pridanie novej úlohy – validácia v krokoch
+# Pridanie úlohy
 def pridat_ulohu(spojenie):
     cursor = spojenie.cursor()
 
@@ -60,11 +88,9 @@ def pridat_ulohu(spojenie):
     except Error as e:
         print("❌ Chyba pri ukladaní úlohy:", e)
 
-
-# Funkcia na zobrazenie všetkých úloh
+# Zobrazenie úloh
 def zobrazit_ulohy(spojenie):
     cursor = spojenie.cursor()
-
     try:
         sql = "SELECT id, nazov, popis, stav FROM ulohy WHERE stav IN ('Nezahájená', 'Prebieha')"
         cursor.execute(sql)
@@ -76,16 +102,13 @@ def zobrazit_ulohy(spojenie):
             print("\n📝 Aktívne úlohy:")
             for id, nazov, popis, stav in vysledky:
                 print(f"#{id} | {nazov} – {popis} [{stav}]")
-
     except Error as e:
         print("❌ Chyba pri načítaní úloh:", e)
 
-# Funkcia na aktualizovanie úloh
+# Aktualizácia stavu úlohy
 def aktualizovat_ulohu(spojenie):
     cursor = spojenie.cursor()
-
     try:
-        # Zobrazíme všetky úlohy s ID, názvom a stavom
         cursor.execute("SELECT id, nazov, stav FROM ulohy")
         ulohy = cursor.fetchall()
 
@@ -124,17 +147,13 @@ def aktualizovat_ulohu(spojenie):
         cursor.execute("UPDATE ulohy SET stav = %s WHERE id = %s", (novy_stav, id_ulohy))
         spojenie.commit()
         print(f"✅ Stav úlohy s ID {id_ulohy} bol zmenený na '{novy_stav}'.")
-
     except Error as e:
         print("❌ Chyba pri aktualizácii úlohy:", e)
 
-
-# Funkcia na odstránenie vybranej úlohy podľa poradia
+# Odstránenie úlohy
 def odstranit_ulohu(spojenie):
     cursor = spojenie.cursor()
-
     try:
-        # Zobraz úlohy ako pri zobrazení
         cursor.execute("SELECT id, nazov, popis FROM ulohy")
         ulohy = cursor.fetchall()
 
@@ -154,37 +173,36 @@ def odstranit_ulohu(spojenie):
 
         id_ulohy = int(vyber)
 
-        # Over, či úloha s daným ID existuje
         cursor.execute("SELECT * FROM ulohy WHERE id = %s", (id_ulohy,))
         if cursor.fetchone() is None:
             print("❌ Úloha s takým ID neexistuje.")
             return
 
-        # Odstránenie
         cursor.execute("DELETE FROM ulohy WHERE id = %s", (id_ulohy,))
         spojenie.commit()
         print(f"🗑️ Úloha s ID {id_ulohy} bola odstránená.")
-
     except Error as e:
         print("❌ Chyba pri odstraňovaní úlohy:", e)
 
+# --- Spustenie programu ---
+if __name__ == "__main__":
+    spojenie = pripojenie_db()
+    vytvor_tabulku(spojenie)
 
-# --- HLAVNÝ CYKLUS PROGRAMU ---
+    while True:
+        volba = hlavne_menu()
 
-# Cyklus sa opakuje, kým používateľ nezvolí možnosť "4"
-while True:
-    volba = hlavne_menu()
-
-    if volba == "1":
-        pridat_ulohu(spojenie)
-    elif volba == "2":
-        zobrazit_ulohy(spojenie)
-    elif volba == "3":
-        aktualizovat_ulohu(spojenie)
-    elif volba == "4":
-        odstranit_ulohu(spojenie)
-    elif volba == "5":
-        print("👋 Program sa ukončuje...")
-        break
-    else:
-        print("❌ Neplatná voľba. Skús znova.")
+        if volba == "1":
+            pridat_ulohu(spojenie)
+        elif volba == "2":
+            zobrazit_ulohy(spojenie)
+        elif volba == "3":
+            aktualizovat_ulohu(spojenie)
+        elif volba == "4":
+            odstranit_ulohu(spojenie)
+        elif volba == "5":
+            print("👋 Program sa ukončuje...")
+            spojenie.close()
+            break
+        else:
+            print("❌ Neplatná voľba. Skús znova.")
