@@ -8,43 +8,35 @@
 ## ✨ Čo som implementoval
 
 - Odstránil som používanie zoznamu v pamäti (`ulohy = []`) a nahradil ho trvalým uložením v MySQL databáze.
+- Pridal som automatické vytvorenie databázy `task_manager_1_1` (ak ešte neexistuje) priamo v kóde.
 - Vytvoril som tabuľku `ulohy` s atribútmi:
-  - `id`, `nazov`, `popis`, `stav`, `datum_vytvorenia`
-- Pridal som funkciu `pripojenie_db()` na bezpečné pripojenie k databáze.
+  - `id`, `nazov`, `popis`, `stav`, `datum_vytvoreni`
 - Implementoval som kompletné CRUD operácie:
   - `Create` – Pridanie úlohy
   - `Read` – Zobrazenie aktívnych úloh (iba Nezahájená alebo Prebieha)
   - `Update` – Zmena stavu úlohy na *Prebieha* alebo *Hotová*
   - `Delete` – Odstránenie úlohy podľa ID
 - Pridal som validáciu vstupov (názov a popis musia byť vyplnené).
+- Pripojenie k databáze a vytvorenie štruktúry je automatizované – netreba ručne vytvárať databázu ani tabuľku.
 - Upravil som konzolové menu podľa požiadaviek zadania – obsahuje všetkých 5 možností:
   1. **Pridať novú úlohu** – umožňuje vložiť názov a popis (s validáciou).
   2. **Zobraziť úlohy** – vypíše všetky aktívne úlohy (stav: Nezahájená alebo Prebieha).
   3. **Aktualizovať úlohu** – umožňuje zmeniť stav úlohy na *Prebieha* alebo *Hotová*.
   4. **Odstrániť úlohu** – zmaže úlohu podľa jej ID z databázy.
-  5. **Ukončiť program** – korektne ukončí beh aplikácie.
+  5. **Ukončiť program** – korektne ukončí beh aplikácie a uzatvorí spojenie s databázou.
+
+---
 
 ## 🔁 Porovnanie s predchádzajúcou verziou:
 
-🔹 Ukladanie úloh:
-- 1.0: do pamäťového zoznamu (stratí sa po vypnutí)
-- 1.1: do MySQL databázy (trvalé uloženie)
-
-🔹 Validácia vstupov:
-- 1.0: mohol si zadať prázdny názov alebo popis
-- 1.1: názov aj popis sú povinné
-
-🔹 Aktualizácia stavu:
-- 1.0: neexistovala
-- 1.1: možnosť zmeniť stav na „Prebieha“ alebo „Hotová“
-
-🔹 Odstránenie úlohy:
-- 1.0: vymazanie podľa poradia v zozname
-- 1.1: vymazanie podľa ID z databázy
-
-🔹 Konzolové menu:
-- 1.0: 4 možnosti (bez aktualizácie a bez validácie)
-- 1.1: 5 možností (plné CRUD, validácia, pripojenie k DB)
+| Funkcia            | Verzia 1.0                     | Verzia 1.1                                         |
+|--------------------|-------------------------------|----------------------------------------------------|
+| Ukladanie úloh     | do zoznamu v pamäti            | do MySQL databázy (trvalé)                         |
+| Validácia vstupov  | neexistovala                   | názov aj popis sú povinné                          |
+| Aktualizácia stavu | neexistovala                   | možnosť zmeniť stav úlohy                          |
+| Odstránenie úlohy  | podľa poradia v zozname        | podľa ID v databáze                                |
+| Pripojenie k DB    | žiadne                         | automatické + vytvára databázu a tabuľku           |
+| Konzolové menu     | 4 možnosti                     | 5 možností, plné CRUD, konzistentné správy         |
 
 ---
 
@@ -53,29 +45,24 @@
 - Python 3
 - MySQL databáza
 - `mysql-connector-python`
-- MySQL Workbench
+- MySQL Workbench (voliteľne – na vizuálnu kontrolu údajov)
 
 ---
 
 ## ▶️ Ako projekt spustiť
 
-> **ℹ️ Poznámka pre kontrolu:**  
-> Projekt vyžaduje lokálnu MySQL databázu.  
-> V prípade, že databáza `task_manager_1_1` ešte neexistuje, je potrebné ju vytvoriť podľa pokynov nižšie.  
-> Všetky SQL príkazy sú pripravené, stačí ich vložiť do MySQL Workbench.
+1. **Uisti sa, že máš spustený MySQL server** (napr. cez XAMPP alebo MySQL Workbench)
+2. Nainštaluj knižnicu `mysql-connector-python` (ak ešte nie je):
+-pip install mysql-connector-python
+3. Otvor súbor `task_manager_1_1.py` a uprav prihlasovacie údaje, ak používaš iné (napr. `user="root", password="tvojeheslo"`).
+4. Spusti skript: python task_manager_1_1.py
+5. ✅ Pri prvom spustení sa databáza `task_manager_1_1` aj tabuľka `ulohy` automaticky vytvoria – netreba nič ručne vytvárať.
 
-1. Vytvor databázu `task_manager_1_1` v MySQL.
-   CREATE DATABASE task_manager_1_1;
-3. V rámci nej vytvor tabuľku `ulohy` pomocou SQL:
-   
+---
+
+## 🧪 Bonus
+
+Môžeš si overiť záznamy cez MySQL Workbench:
 ```sql
-CREATE TABLE IF NOT EXISTS ulohy (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nazov VARCHAR(255) NOT NULL,
-    popis TEXT NOT NULL,
-    stav ENUM('Nezahájená', 'Prebieha', 'Hotová') DEFAULT 'Nezahájená',
-    datum_vytvorenia TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-3. V súbore task_manager_1_1.py si uprav prihlasovacie údaje k databáze podľa svojho lokálneho nastavenia (napr. user="root", password="1234").
-4. Spusti skript cez terminál pomocou príkazu: python task_manager_1_1.py
+USE task_manager_1_1;
+SELECT * FROM ulohy;
