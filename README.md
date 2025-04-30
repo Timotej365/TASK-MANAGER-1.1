@@ -27,6 +27,14 @@
 
 ---
 
+## 🧪 Testovanie
+
+- **Manuálne testovanie**: vykonané počas vývoja
+- **SQL testovanie**: pridané v samostatnom súbore  
+  → Viď `sql_test_cases_task_manager_1_1_.md` pre detailné testovacie prípady na databázové operácie
+
+---
+
 ## 🔁 Porovnanie s predchádzajúcou verziou:
 
 | Funkcia            | Verzia 1.0                     | Verzia 1.1                                         |
